@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1e2a78">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>NEXORA</title>
+<style>
+:root{--bg:#f3f4fa;--card:#fff;--tx:#161a3a;--mut:#5b6088;--ink:#1e2a78;--sun:#f2a900;--ok:#0f7a3d;--bd:#dfe2f0;--soft:#e9ecfb;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1226;--card:#191d3b;--tx:#eceefb;--mut:#a3a8d1;--ink:#8d9bff;--sun:#ffc53d;--ok:#5fdb92;--bd:#2a2f5a;--soft:#232852;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1226;--card:#191d3b;--tx:#eceefb;--mut:#a3a8d1;--ink:#8d9bff;--sun:#ffc53d;--ok:#5fdb92;--bd:#2a2f5a;--soft:#232852;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding-bottom:84px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:#1e2a78;z-index:10}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:#1e2a78;color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+header b{font-size:20px;letter-spacing:.05em}#dt{font-size:12px;color:#c9cffc;text-align:right}
+main{max-width:640px;margin:0 auto;padding:14px}
+h2{margin:4px 0 10px;font-size:20px}
+.board{background:#1e2a78;color:#fff;border:3px solid var(--sun);border-radius:14px;padding:14px;margin-bottom:12px}
+.board h1{margin:0;font-size:22px}.board p{margin:4px 0 0;color:#c9cffc;font-size:14px}
+.warn{background:#fff4d6;color:#4a3500;border-radius:10px;padding:10px;margin-bottom:12px;font-size:14px;font-weight:600}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px;margin-bottom:10px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.mut{color:var(--mut);font-size:13px}.ok{color:var(--ok);font-weight:700;font-size:13px}
+.price{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums}
+.best,.chip{display:inline-block;font-size:12px;font-weight:700;padding:2px 8px;border-radius:99px;background:var(--soft)}
+.best{background:var(--sun);color:#241a00;font-weight:800}
+.chips{display:flex;gap:8px;overflow-x:auto;margin-bottom:10px}
+button,.btn{font:inherit;font-weight:700;border:0;border-radius:10px;padding:10px 14px;background:var(--ink);color:#fff;cursor:pointer;text-decoration:none;display:inline-block;text-align:center}
+:root[data-theme="dark"] button,:root[data-theme="dark"] .btn{color:#0f1226}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) button,:root:not([data-theme="light"]) .btn{color:#0f1226}}
+button.alt{background:var(--soft);color:var(--tx)}.chips button{white-space:nowrap}
+.wa{background:#1fa855!important;color:#fff!important;margin:4px 6px 4px 0}
+input,select{font:inherit;width:100%;box-sizing:border-box;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card);color:var(--tx);margin:4px 0 10px}
+label{font-size:13px;font-weight:700}
+.msg{background:var(--soft);border-radius:10px;padding:10px;font-size:13px;white-space:pre-wrap;margin:8px 0}
+button:focus-visible,input:focus-visible,select:focus-visible,.btn:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+nav{position:fixed;left:0;right:0;bottom:0;z-index:9;display:flex;background:var(--card);border-top:1px solid var(--bd);padding-bottom:env(safe-area-inset-bottom,0px)}
+nav button{flex:1;background:none;color:var(--mut);border-radius:0;padding:8px 2px;font-size:11px}
+nav button.on{color:var(--ink);box-shadow:inset 0 3px 0 var(--sun)}
+nav i{display:block;font-style:normal;font-size:20px}
+#sheet{position:fixed;inset:0;background:rgba(10,12,30,.6);z-index:20;display:none;align-items:flex-end}
+#sheet.show{display:flex}
+#sheet>div{background:var(--bg);width:100%;max-width:640px;margin:auto;border-radius:18px 18px 0 0;padding:16px;max-height:85%;overflow-y:auto;box-sizing:border-box}
+#toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:var(--tx);color:var(--bg);padding:10px 16px;border-radius:99px;font-size:14px;z-index:30;display:none;max-width:90%}
+ul{padding-left:18px;margin:6px 0}
+</style></head><body>
+<header><b>NEXORA</b><span id="dt"></span></header>
+<main id="app"></main>
+<nav id="nav"></nav>
+<div id="sheet"><div id="sheetc"></div></div>
+<div id="toast" role="status"></div>
+<!--
+POUR METTRE À JOUR NEXORA : modifie seulement le bloc de données ci-dessous (entre les accolades), puis enregistre.
+- date : date du relevé des prix, par exemple "Lundi 19 octobre, 8 h 30"
+- reel : mets true quand ce sont de vrais prix (cela retire l’avertissement « exemple »)
+- wa : ton numéro WhatsApp avec l’indicatif, par exemple "226XXXXXXXX" (il sera PUBLIC, mets-le seulement si tu es d’accord)
+- chaine : le lien de ta chaîne WhatsApp
+- produits : pour chaque produit, des lignes {"f":"Nom du fournisseur","p":prix,"m":"minimum"}
+- fournisseurs : ajoute un fournisseur SEULEMENT après l’avoir vérifié (appel, visite, achat test, avis clients). Modèle :
+  {"id":1,"n":"Nom","c":"Alimentaire","p":["Riz 25 kg"],"l":"Lieu","m":"10 sacs minimum","v":"Livraison oui/non","pay":"Orange Money","t":["Magasin visité","Achat test","Avis clients"],"d":"JJ/MM/AAAA"}
+Attention aux virgules : il en faut une entre chaque élément, et aucune après le dernier.
+-->
+<script type="application/json" id="data">
+{
+"date":"",
+"reel":false,
+"wa":"",
+"chaine":"",
+"produits":[
+{"n":"Riz 25 kg","rows":[
+{"f":"Grossiste A (exemple)","p":14500,"m":"10 sacs"},
+{"f":"Grossiste B (exemple)","p":14800,"m":"5 sacs"},
+{"f":"Grossiste C (exemple)","p":14200,"m":"20 sacs"}]},
+{"n":"Huile 20 L","rows":[]}
+],
+"fournisseurs":[]
+}
+</script>
+<script>
+const $=i=>document.getElementById(i);
+const D=JSON.parse($("data").textContent);
+const F=n=>Number(n).toLocaleString("fr-FR")+" F";
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const wa=t=>"https://wa.me/"+(D.wa?String(D.wa).replace(/\D/g,""):"")+"?text="+encodeURIComponent(t);
+const tabs=[["prix","📊","Prix"],["four","🤝","Fournisseurs"],["dem","🔎","Demande"],["car","📒","Carnet"],["plus","➕","Plus"]];
+let tab="prix",cur=0,cat="Tous",sheet=null,req=null,debts=store.get("nx_debts",[]);
+function toast(t){const e=$("toast");e.textContent=t;e.style.display="block";clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display="none",2800)}
+function vPrix(){
+const pr=D.produits[cur]||D.produits[0],rows=[...pr.rows].sort((a,b)=>a.p-b.p);
+let h=`<div class="board"><h1>Prix du jour</h1><p>Relevés par téléphone auprès de grossistes. Pas encore vérifiés par une visite.</p></div>`;
+if(!D.reel)h+=`<div class="warn">⚠️ Prix d’exemple : de vrais prix seront publiés bientôt.</div>`;
+h+=`<div class="chips">${D.produits.map((p,i)=>`<button class="${i==cur?"":"alt"}" data-a="cur" data-v="${i}">${esc(p.n)}</button>`).join("")}</div>`;
+h+=rows.length?rows.map((r,i)=>`<div class="card"><div class="row"><div><b>${esc(r.f)}</b><div class="mut">Minimum : ${esc(r.m||"à confirmer")}</div></div><div style="text-align:right"><div class="price">${F(r.p)}</div>${i==0?'<span class="best">Meilleur prix</span>':""}</div></div></div>`).join(""):`<div class="card">Bientôt disponible.</div>`;
+h+=`<div class="card"><b>Tu paies un autre prix ?</b><p class="mut">Dis-le-nous : ça aide les autres commerçants.</p><a class="btn wa" target="_blank" rel="noopener" href="${wa("Bonjour NEXORA, je paie "+pr.n+" à : ")}">Envoyer un prix</a>${D.chaine?`<a class="btn wa" target="_blank" rel="noopener" href="${esc(D.chaine)}">Chaîne WhatsApp</a>`:""}</div><p class="mut">${D.date?"Dernière mise à jour : "+esc(D.date)+". ":""}NEXORA met en relation. Chaque achat reste ta décision.</p>`;
+return h}
+function vFour(){
+const L=D.fournisseurs,cs=["Tous",...new Set(L.map(s=>s.c))];
+if(!L.length)return `<h2>Fournisseurs vérifiés</h2><div class="card"><b>Les premiers fournisseurs arrivent bientôt.</b><p class="mut">NEXORA ne présente un fournisseur qu’après l’avoir vérifié : appel, visite, achat test et avis de clients. Tu es fournisseur ? Va dans « Plus » pour postuler.</p></div>`;
+return `<h2>Fournisseurs vérifiés</h2><div class="chips">${cs.map(c=>`<button class="${c==cat?"":"alt"}" data-a="cat" data-v="${esc(c)}">${esc(c)}</button>`).join("")}</div>`+L.filter(s=>cat=="Tous"||s.c==cat).map(s=>`<div class="card" data-a="sheet" data-v="${s.id}" style="cursor:pointer"><div class="row"><b>${esc(s.n)}</b><span class="ok">✔ Vérifié</span></div><div class="mut">${esc(s.l)}</div><div style="margin-top:6px">${(s.p||[]).map(p=>`<span class="chip">${esc(p)}</span>`).join(" ")}</div><div class="mut" style="margin-top:6px">${esc(s.m||"")} · Vérifié le ${esc(s.d||"")}</div></div>`).join("")}
+function vDem(){
+const r=req||{prod:D.produits[0].n,qty:"",bud:"",city:""};let out="";
+if(req){const ms=D.fournisseurs.filter(s=>(s.p||[]).includes(r.prod));
+const m=`Bonjour NEXORA, je cherche : ${r.prod}\nQuantité : ${r.qty||"à préciser"}\nBudget : ${r.bud||"à préciser"}\nVille : ${r.city||"à préciser"}`;
+out=`<h2 style="margin-top:16px">Résultat</h2>`+(ms.length?ms.map(s=>`<div class="card"><div class="row"><b>${esc(s.n)}</b><span class="ok">✔ Vérifié</span></div><div class="mut">${esc(s.m||"")} · ${esc(s.l)}</div><div style="margin-top:8px"><button class="alt" data-a="sheet" data-v="${s.id}">Voir la fiche</button></div></div>`).join(""):`<div class="card">Aucun fournisseur vérifié pour ce produit pour l’instant. Envoie ta demande, on te répond.</div>`)+`<div class="card"><b>Message pour NEXORA</b><div class="msg">${esc(m)}</div><a class="btn wa" target="_blank" rel="noopener" href="${wa(m)}">Envoyer sur WhatsApp</a></div>`}
+return `<h2>Je cherche un produit</h2><div class="card"><label for="q1">Produit</label><select id="q1">${D.produits.map(x=>`<option ${x.n==r.prod?"selected":""}>${esc(x.n)}</option>`).join("")}</select><label for="q2">Quantité</label><input id="q2" value="${esc(r.qty)}" placeholder="Ex. 20 sacs"><label for="q3">Budget (F)</label><input id="q3" value="${esc(r.bud)}" inputmode="numeric"><label for="q4">Ville</label><input id="q4" value="${esc(r.city)}" placeholder="Ex. Ouagadougou"><button data-a="find">Trouver un fournisseur</button></div>`+out}
+function vCar(){
+const tot=debts.reduce((a,d)=>a+d.m,0);
+return `<h2>Carnet de dettes</h2><div class="board"><div class="mut" style="color:#c9cffc">Total à récupérer</div><div class="price">${F(tot)}</div><div class="mut" style="color:#c9cffc">${debts.length} client(s) · données gardées sur ton téléphone seulement</div></div><div class="card"><label for="c1">Nom du client</label><input id="c1"><label for="c2">Montant dû (F)</label><input id="c2" inputmode="numeric"><label for="c3">Pour quoi ?</label><input id="c3" placeholder="Ex. 2 sacs de riz"><button data-a="add">Ajouter</button></div>`+(debts.length?debts.map(d=>{const m=`Bonjour ${d.nom}, petit rappel : il reste ${F(d.m)} à régler (${d.note}). Merci !`;return `<div class="card"><div class="row"><div><b>${esc(d.nom)}</b><div class="mut">${esc(d.note)} · ${esc(d.d)}</div></div><div class="price" style="font-size:20px">${F(d.m)}</div></div><div style="margin-top:8px"><a class="btn wa" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(m)}">Rappel WhatsApp</a><button class="alt" data-a="paid" data-v="${d.id}">Payé</button></div></div>`}).join(""):`<div class="card mut">Aucune dette notée. Ajoute ton premier client ci-dessus.</div>`)+`<p class="mut">Si tu changes de téléphone ou effaces les données du navigateur, ces notes disparaissent.</p>`}
+function vPlus(){
+const inv="Je suis sur NEXORA : les prix du jour et des fournisseurs vérifiés pour les commerçants. Regarde : "+location.href.split("#")[0];
+return `<h2>Plus</h2><div class="card"><b>Inviter un ami commerçant</b><p class="mut">Plus on est nombreux, plus les prix sont fiables.</p><a class="btn wa" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(inv)}">Inviter par WhatsApp</a></div>
+<div class="card"><b>Devenir fournisseur NEXORA</b><p class="mut">Ta candidature arrive à NEXORA, qui te contacte pour vérifier ton activité. Le badge « Vérifié » ne s’achète pas.</p><label for="s1">Nom de ta boutique</label><input id="s1"><label for="s2">Produit principal</label><input id="s2" placeholder="Ex. Riz 25 kg"><label for="s3">Ton prix (F)</label><input id="s3" inputmode="numeric"><label for="s4">Minimum de commande</label><input id="s4" placeholder="Ex. 10 sacs"><label for="s5">Lieu</label><input id="s5" placeholder="Ex. Grand marché"><label for="s6">Ton téléphone WhatsApp</label><input id="s6" inputmode="tel"><button data-a="sub">Envoyer ma candidature</button></div>
+<div class="card"><b>Comment NEXORA vérifie</b><ul><li>Un appel pour poser les questions.</li><li>Une visite du magasin ou du stock.</li><li>Un petit achat test.</li><li>Des avis de clients.</li></ul><p class="mut">Un fournisseur qui pose problème est retiré.</p></div>
+<div class="card"><b>Prix et abonnement</b><p class="mut">NEXORA est gratuit pour l’instant. Un abonnement pour plus de services pourra venir plus tard, et il sera annoncé clairement.</p></div>`}
+function vSheet(){
+const s=D.fournisseurs.find(x=>x.id==sheet);if(!s)return "";
+const m=`Bonjour ${s.n}, NEXORA m’envoie. Je suis intéressé par : ${(s.p||[]).join(", ")}. Pouvez-vous me confirmer le prix et la disponibilité ?`;
+return `<div class="row"><h2 style="margin:0">${esc(s.n)}</h2><button class="alt" data-a="close" aria-label="Fermer">✕</button></div><p class="ok">✔ Vérifié par NEXORA le ${esc(s.d||"")}</p><div class="card"><div class="mut">Produits</div>${esc((s.p||[]).join(", "))}<div class="mut">Minimum</div>${esc(s.m||"")}<div class="mut">Livraison</div>${esc(s.v||"")}<div class="mut">Paiement</div>${esc(s.pay||"")}<div class="mut">Lieu</div>${esc(s.l||"")}</div><div class="card"><b>Comment il a été vérifié</b><ul>${(s.t||[]).map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div><div class="msg">${esc(m)}</div><a class="btn wa" target="_blank" rel="noopener" href="${wa(m)}">Contacter sur WhatsApp</a>`}
+function render(){
+$("dt").textContent=D.date||"";
+$("app").innerHTML=({prix:vPrix,four:vFour,dem:vDem,car:vCar,plus:vPlus})[tab]();
+$("nav").innerHTML=tabs.map(t=>`<button class="${t[0]==tab?"on":""}" data-a="tab" data-v="${t[0]}"><i>${t[1]}</i>${t[2]}</button>`).join("");
+$("sheet").className=sheet?"show":"";if(sheet)$("sheetc").innerHTML=vSheet()}
+const g=i=>$(i).value.trim();
+const A={
+tab(v){tab=v;sheet=null;window.scrollTo(0,0);render()},
+cur(v){cur=+v;render()},cat(v){cat=v;render()},sheet(v){sheet=v;render()},close(){sheet=null;render()},
+find(){req={prod:g("q1"),qty:g("q2"),bud:g("q3"),city:g("q4")};render()},
+add(){const m=parseInt(g("c2").replace(/\D/g,""),10);if(!g("c1")||!m){toast("Écris le nom et le montant.");return}
+debts.unshift({id:Date.now(),nom:g("c1"),m:m,note:g("c3")||"Sans détail",d:new Date().toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit"})});store.set("nx_debts",debts);render();toast("Dette ajoutée.")},
+paid(v){debts=debts.filter(d=>d.id!=v);store.set("nx_debts",debts);render();toast("Dette marquée payée.")},
+sub(){const px=parseInt(g("s3").replace(/\D/g,""),10);if(!g("s1")||!g("s2")||!px||!g("s6")){toast("Remplis le nom, le produit, le prix et ton téléphone.");return}
+const m=`Candidature fournisseur NEXORA\nBoutique : ${g("s1")}\nProduit : ${g("s2")}\nPrix : ${F(px)}\nMinimum : ${g("s4")||"à préciser"}\nLieu : ${g("s5")||"à préciser"}\nTéléphone : ${g("s6")}`;
+window.open(wa(m),"_blank","noopener")}};
+document.addEventListener("click",e=>{const t=e.target.closest("[data-a]");if(!t||t.tagName=="A")return;A[t.dataset.a](t.dataset.v)});
+$("sheet").addEventListener("click",e=>{if(e.target.id=="sheet")A.close()});
+render();
+if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script></body></html>
