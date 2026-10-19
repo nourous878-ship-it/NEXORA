@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>NEXORA — Prix du jour</title>
+<style>
+:root{--bg:#f3f4fa;--card:#fff;--tx:#161a3a;--mut:#5b6088;--ink:#1e2a78;--sun:#f2a900;--ok:#0f7a3d;--bd:#dfe2f0;--soft:#e9ecfb;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1226;--card:#191d3b;--tx:#eceefb;--mut:#a3a8d1;--ink:#8d9bff;--sun:#ffc53d;--ok:#5fdb92;--bd:#2a2f5a;--soft:#232852;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1226;--card:#191d3b;--tx:#eceefb;--mut:#a3a8d1;--ink:#8d9bff;--sun:#ffc53d;--ok:#5fdb92;--bd:#2a2f5a;--soft:#232852;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:#1e2a78;z-index:10}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:#1e2a78;color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+header b{font-size:20px;letter-spacing:.05em}
+#dt{font-size:12px;color:#c9cffc;text-align:right}
+main{max-width:620px;margin:0 auto;padding:14px}
+.board{background:#1e2a78;color:#fff;border:3px solid var(--sun);border-radius:14px;padding:14px;margin-bottom:12px}
+.board h1{margin:0;font-size:22px}.board p{margin:4px 0 0;color:#c9cffc;font-size:14px}
+.warn{background:#fff4d6;color:#4a3500;border-radius:10px;padding:10px;margin-bottom:12px;font-size:14px;font-weight:600}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px;margin-bottom:10px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.mut{color:var(--mut);font-size:13px}
+.price{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums}
+.best{background:var(--sun);color:#241a00;font-size:12px;font-weight:800;padding:2px 8px;border-radius:99px}
+.chips{display:flex;gap:8px;overflow-x:auto;margin-bottom:10px}
+button,.btn{font:inherit;font-weight:700;border:0;border-radius:10px;padding:10px 14px;background:var(--ink);color:#fff;cursor:pointer;text-decoration:none;display:inline-block}
+:root[data-theme="dark"] button,:root[data-theme="dark"] .btn{color:#0f1226}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) button,:root:not([data-theme="light"]) .btn{color:#0f1226}}
+button.alt{background:var(--soft);color:var(--tx)}
+.chips button{white-space:nowrap}
+.wa{background:#1fa855!important;color:#fff!important;margin:4px 6px 4px 0}
+input{font:inherit;box-sizing:border-box;padding:8px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--tx);width:100%;margin:2px 0}
+.g{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:6px;align-items:center;margin-bottom:6px}
+label{font-size:13px;font-weight:700;display:block;margin-top:8px}
+#adm{max-width:620px;margin:0 auto;padding:0 14px 40px}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--tx);color:var(--bg);padding:10px 16px;border-radius:99px;font-size:14px;z-index:30;display:none}
+button:focus-visible,input:focus-visible,.btn:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+</style></head><body>
+<header><b>NEXORA</b><span id="dt"></span></header>
+<main><div id="app"></div></main>
+<div id="toast" role="status"></div>
+<!-- POUR METTRE À JOUR LES PRIX : change les chiffres et les noms dans la ligne ci-dessous (p = prix, m = minimum, date = date du relevé). Mets "reel":true quand ce sont de vrais prix. Enregistre ensuite le fichier. -->
+<script type="application/json" id="data">{"date":"","reel":false,"lien":"","wa":"","produits":[{"n":"Riz 25 kg","rows":[{"f":"Grossiste A (exemple)","p":14500,"m":"10 sacs"},{"f":"Grossiste B (exemple)","p":14800,"m":"5 sacs"},{"f":"Grossiste C (exemple)","p":14200,"m":"20 sacs"}]},{"n":"Huile 20 L","rows":[]}]}</script>
+<script>
+const D=JSON.parse(document.getElementById("data").textContent);
+const $=i=>document.getElementById(i);
+const F=n=>Number(n).toLocaleString("fr-FR")+" F";
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let cur=0,owner=false,edit=false;
+function toast(t){const e=$("toast");e.textContent=t;e.style.display="block";clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display="none",3000)}
+function render(){
+$("dt").textContent=D.date||"";
+const pr=D.produits[cur]||D.produits[0];
+const rows=[...pr.rows].sort((a,b)=>a.p-b.p);
+let h=`<div class="board"><h1>Prix du jour</h1><p>Relevés par téléphone auprès de grossistes de Ouagadougou. Pas encore vérifiés par une visite.</p></div>`;
+if(!D.reel)h+=`<div class="warn">⚠️ Prix d’exemple : de vrais prix seront publiés bientôt.</div>`;
+h+=`<div class="chips">${D.produits.map((p,i)=>`<button class="${i==cur?"":"alt"}" data-a="cur" data-v="${i}">${esc(p.n)}</button>`).join("")}</div>`;
+h+=rows.length?rows.map((r,i)=>`<div class="card"><div class="row"><div><b>${esc(r.f)}</b><div class="mut">Minimum : ${esc(r.m||"à confirmer")}</div></div><div style="text-align:right"><div class="price">${F(r.p)}</div>${i==0?'<span class="best">Meilleur prix</span>':""}</div></div></div>`).join(""):`<div class="card">Bientôt disponible.</div>`;
+h+=`<div class="card"><b>Tu paies un autre prix ?</b><p class="mut">Dis-le-nous : ça aide les autres commerçants à acheter au bon prix.</p>`;
+if(D.lien)h+=`<a class="btn wa" target="_blank" rel="noopener" href="${esc(D.lien)}">Rejoindre la chaîne WhatsApp</a>`;
+if(D.wa)h+=`<a class="btn wa" target="_blank" rel="noopener" href="https://wa.me/${esc(D.wa.replace(/\D/g,""))}?text=${encodeURIComponent("Bonjour NEXORA, je paie "+pr.n+" à : ")}">Envoyer un prix</a>`;
+h+=`</div><p class="mut">NEXORA met en relation. Chaque achat reste ta décision.</p>`;
+$("app").innerHTML=h;
+}
+const A={cur(v){cur=+v;render()}};
+document.addEventListener("click",e=>{const t=e.target.closest("[data-a]");if(t&&A[t.dataset.a]&&t.tagName!="A")A[t.dataset.a](t.dataset.v)});
+render();
+</script></body></html>
